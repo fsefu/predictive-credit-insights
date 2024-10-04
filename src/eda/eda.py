@@ -56,14 +56,30 @@ class EDA:
             plt.show()
 
     def correlation_analysis(self):
-        """
-        Displays the correlation matrix of numerical features and visualizes it using a heatmap.
-        """
-        plt.figure(figsize=(10, 8))
-        corr_matrix = self.data.corr()
-        sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
-        plt.title('Correlation Matrix')
-        plt.show()
+            """
+            Displays the correlation matrix of numerical features and visualizes it using a heatmap.
+            Handles non-numeric columns and missing values appropriately.
+            """
+            print("inside the correlations: ")
+            # Step 1: Select only numeric columns
+            numeric_data = self.data.select_dtypes(include=['int64', 'float64'])
+            
+            if numeric_data.empty:
+                print("No numeric columns available for correlation analysis.")
+                return
+            
+            # Step 2: Handle missing values (either drop or fill them)
+            # Here we fill missing values with the mean (you can choose other strategies like dropna)
+            numeric_data = numeric_data.fillna(numeric_data.mean())
+            
+            # Step 3: Compute the correlation matrix
+            corr_matrix = numeric_data.corr()
+
+            # Step 4: Plot the correlation matrix
+            plt.figure(figsize=(10, 8))
+            sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
+            plt.title('Correlation Matrix')
+            plt.show()
 
     def identify_missing_values(self):
         """
