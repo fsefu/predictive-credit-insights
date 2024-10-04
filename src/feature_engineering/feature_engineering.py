@@ -149,7 +149,7 @@ class MissingValueHandler:
         """Save the cleaned data to a CSV file."""
         self.data.to_csv(filename, index=False)
         print(f"Cleaned data saved to {filename}")
-        
+
 # 5. Normalization and Standardization Class
 class Scaler:
     def __init__(self, data: pd.DataFrame):
@@ -172,30 +172,41 @@ class WOEIVFeatureEngineering:
         self.target_col = target_col
 
     def calculate_woe_iv(self, feature_cols: list) -> pd.DataFrame:
+        # Initialize DataFrame to store WoE and IV values for all features
         woe_iv_df = pd.DataFrame(columns=['Feature', 'WoE', 'IV'])
 
+        # Total number of events (defaults) and non-events (non-defaults)
         total_events = self.data[self.target_col].sum()
-        total_non_events = self.data[self.target_col].count() - total_events
+        total_non_events = len(self.data) - total_events
+
+        # Store WoE and IV results in a list for efficiency
+        woe_iv_list = []
 
         for col in feature_cols:
-            # Group the data by the feature column and calculate counts
+            # Group by the feature and calculate counts of events and non-events
             grouped = self.data.groupby(col)[self.target_col].agg(['count', 'sum']).reset_index()
             grouped.columns = [col, 'total_count', 'event_count']
             grouped['non_event_count'] = grouped['total_count'] - grouped['event_count']
 
-            # Calculate event and non-event rates
+            # Calculate event rate and non-event rate, avoid zero values
             grouped['event_rate'] = grouped['event_count'] / total_events
             grouped['non_event_rate'] = grouped['non_event_count'] / total_non_events
 
+            # Replace 0 rates with a small number to avoid log(0)
+            grouped.replace({'event_rate': {0: 0.0001}, 'non_event_rate': {0: 0.0001}}, inplace=True)
+
             # Calculate WoE and IV
-            grouped['WoE'] = np.log(grouped['event_rate'] / grouped['non_event_rate'].replace(0, np.nan))
+            grouped['WoE'] = np.log(grouped['event_rate'] / grouped['non_event_rate'])
             grouped['IV'] = (grouped['event_rate'] - grouped['non_event_rate']) * grouped['WoE']
 
-            # Aggregate WoE and IV values for the feature
+            # Sum WoE and IV for the current feature
             woe = grouped['WoE'].sum()
             iv = grouped['IV'].sum()
 
-            # Append the results to the output DataFrame
-            woe_iv_df = woe_iv_df.append({'Feature': col, 'WoE': woe, 'IV': iv}, ignore_index=True)
+            # Append the results to the list
+            woe_iv_list.append({'Feature': col, 'WoE': woe, 'IV': iv})
+
+        # Convert list to DataFrame and return
+        woe_iv_df = pd.DataFrame(woe_iv_list)
 
         return woe_iv_df
