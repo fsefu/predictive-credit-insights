@@ -87,28 +87,31 @@ class ModelPipeline:
     #     else:
     #         raise ValueError(f"Model {model_name} not found in pipeline.")
 
-    def train_model(self, model_name):
-        """
-        Train a model and ensure proper handling of model attributes
-        """
-        model = self.models.get(model_name)
-        if model:
-            try:
-                # Train the model
-                model.fit(self.X_train, self.y_train)
-                
-                # Ensure the model is trained successfully by accessing key attributes
-                if hasattr(model, 'estimators_'):
-                    print(f"Model {model_name} trained successfully with {len(model.estimators_)} estimators.")
-                else:
-                    print(f"Model {model_name} trained successfully. No 'estimators_' attribute (non-ensemble model).")
-            
-            except AttributeError as ae:
-                print(f"AttributeError: {ae}. This model might not have 'estimators_' (e.g., Logistic Regression).")
-            except Exception as e:
-                print(f"Error while training {model_name}: {e}")
-        else:
-            raise ValueError(f"Model {model_name} not found in pipeline.")
+    def train_models(self):
+        # Logistic Regression
+        from sklearn.linear_model import LogisticRegression
+        lr = LogisticRegression(random_state=42)
+        lr.fit(self.X_train, self.y_train)
+        self.models['Logistic Regression'] = lr
+
+        # Decision Tree
+        from sklearn.tree import DecisionTreeClassifier
+        dt = DecisionTreeClassifier(random_state=42)
+        dt.fit(self.X_train, self.y_train)
+        self.models['Decision Tree'] = dt
+
+        # Random Forest
+        from sklearn.ensemble import RandomForestClassifier
+        rf = RandomForestClassifier(random_state=42)
+        rf.fit(self.X_train, self.y_train)
+        self.models['Random Forest'] = rf
+
+        # Gradient Boosting Machine
+        from sklearn.ensemble import GradientBoostingClassifier
+        gbm = GradientBoostingClassifier(random_state=42)
+        gbm.fit(self.X_train, self.y_train)
+        self.models['Gradient Boosting'] = gbm
+
 
     def hyperparameter_tuning(self, model_name, param_grid, search_type='grid', cv=5):
         """
