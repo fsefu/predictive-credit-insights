@@ -64,18 +64,49 @@ class ModelPipeline:
         """
         self.models[model_name] = model
 
+    # def train_model(self, model_name):
+    #     """
+    #     Train a model and ensure proper handling of model attributes
+    #     """
+    #     model = self.models.get(model_name)
+    #     if model:
+    #         try:
+    #             # Train the model
+    #             model.fit(self.X_train, self.y_train)
+                
+    #             # Ensure the model is trained successfully by accessing key attributes
+    #             if hasattr(model, 'estimators_'):
+    #                 print(f"Model {model_name} trained successfully with {len(model.estimators_)} estimators.")
+    #             else:
+    #                 print(f"Model {model_name} trained successfully. No 'estimators_' attribute (non-ensemble model).")
+            
+    #         except AttributeError as ae:
+    #             print(f"AttributeError: {ae}. This model might not have 'estimators_' (e.g., Logistic Regression).")
+    #         except Exception as e:
+    #             print(f"Error while training {model_name}: {e}")
+    #     else:
+    #         raise ValueError(f"Model {model_name} not found in pipeline.")
+
     def train_model(self, model_name):
         """
-        Train a model and handle attribute errors
+        Train a model and ensure proper handling of model attributes
         """
         model = self.models.get(model_name)
         if model:
-            model.fit(self.X_train, self.y_train)
-            # Ensure the model is trained by checking if 'estimators_' exists after training
-            if hasattr(model, 'estimators_'):
-                print(f"Model {model_name} trained successfully!")
-            else:
-                print(f"Model {model_name} does not have 'estimators_' attribute. Model might not have trained correctly.")
+            try:
+                # Train the model
+                model.fit(self.X_train, self.y_train)
+                
+                # Ensure the model is trained successfully by accessing key attributes
+                if hasattr(model, 'estimators_'):
+                    print(f"Model {model_name} trained successfully with {len(model.estimators_)} estimators.")
+                else:
+                    print(f"Model {model_name} trained successfully. No 'estimators_' attribute (non-ensemble model).")
+            
+            except AttributeError as ae:
+                print(f"AttributeError: {ae}. This model might not have 'estimators_' (e.g., Logistic Regression).")
+            except Exception as e:
+                print(f"Error while training {model_name}: {e}")
         else:
             raise ValueError(f"Model {model_name} not found in pipeline.")
 
